@@ -21,9 +21,11 @@ namespace myrender{
         std::vector<vk::Image> images;
         std::vector<vk::ImageView> imageViews;
         SwapchainInfo info;
+        std::vector<vk::Framebuffer> framebuffers;
         void QueryInfo(int w, int h);
         void GetImage();
         void CreateImageViews();
+        void CreateFramebuffers(int w, int h);
     };
 
 

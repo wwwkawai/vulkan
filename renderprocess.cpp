@@ -60,8 +60,6 @@ namespace myrender{
         createInfo.setPColorBlendState(&blend);
 
         //RenderPass and Layout
-        InitRenderPass();
-        InitLayout();
         createInfo.setRenderPass(renderPass)
         .setLayout(layout);
 

@@ -35,11 +35,15 @@ namespace myrender {
     }
 
     Swapchain::~Swapchain() {
+        auto& device = Context::GetInstance().device;
+        for(auto& framebuffer:framebuffers){
+           device.destroyFramebuffer(framebuffer);
+        }
         for(auto& view:imageViews){
-            Context::GetInstance().device.destroyImageView(view);
+            device.destroyImageView(view);
         }
         auto& ctx = Context::GetInstance();
-        ctx.device.destroySwapchainKHR(swapchain);
+        device.destroySwapchainKHR(swapchain);
     }
 
     void Swapchain::QueryInfo(int w, int h) {
@@ -71,6 +75,18 @@ namespace myrender {
     }
     void Swapchain::GetImage() {
         images = Context::GetInstance().device.getSwapchainImagesKHR(swapchain);
+    }
+    void Swapchain::CreateFramebuffers(int w, int h) {
+        framebuffers.resize(images.size());
+        for(int i = 0; i<framebuffers.size();i++ ){
+            vk::FramebufferCreateInfo createInfo;
+            createInfo.setAttachments(imageViews[i])
+            .setWidth(w)
+            .setHeight(h)
+            .setRenderPass(Context::GetInstance().renderProcess->renderPass)
+            .setLayers(1);
+            framebuffers[i] = Context::GetInstance().device.createFramebuffer(createInfo);
+        }
     }
     void Swapchain::CreateImageViews() {
         imageViews.resize(images.size());
