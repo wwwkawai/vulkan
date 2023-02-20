@@ -24,5 +24,5 @@ set_target_properties(
         INTERFACE_INCLUDE_DIRECTORIES ${VULKAN_INCLUDE_DIR}
 )
 
-add_executable(vulkan main.cpp context.cpp context.hpp myrender.cpp myrender.hpp tool.hpp swapchain.cpp swapchain.hpp shader.cpp shader.hpp tool.cpp)
+add_executable(vulkan main.cpp context.cpp context.hpp myrender.cpp myrender.hpp tool.hpp swapchain.cpp swapchain.hpp shader.cpp shader.hpp tool.cpp renderprocess.cpp renderprocess.hpp)
 target_link_libraries(vulkan Vulkan SDL2::SDL2main SDL2::SDL2)

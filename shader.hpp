@@ -16,9 +16,13 @@ namespace myrender{
         vk::ShaderModule vertexModule;
         vk::ShaderModule fragModule;
         ~Shader();
+
+        std::vector<vk::PipelineShaderStageCreateInfo> GetStages();
     private:
+        std::vector<vk::PipelineShaderStageCreateInfo> _stages;
         static std::unique_ptr<Shader> _instance;
         Shader(const std::string& vertexSource, const std::string& fragSource);
+        void InitStages();
 
     };
 }

@@ -11,6 +11,7 @@
 #include <optional>
 #include "tool.hpp"
 #include "swapchain.hpp"
+#include "renderprocess.hpp"
 namespace myrender{
     class Context final{
     public:
@@ -25,6 +26,7 @@ namespace myrender{
         vk::Queue presentQueue;
         vk::SurfaceKHR surface;
         std::unique_ptr<Swapchain> swapchain;
+        std::unique_ptr<RenderProcess> renderProcess;
 
 
         struct QueueFamilyIndices final {

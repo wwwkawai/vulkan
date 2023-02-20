@@ -26,6 +26,8 @@ namespace myrender {
         QueryQueueFamilyIndices();
         CreateDevice();
         GetQueues();
+        renderProcess.reset(new RenderProcess);
+
     }
 
     Context::~Context() {

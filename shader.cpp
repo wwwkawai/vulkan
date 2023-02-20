@@ -23,6 +23,7 @@ namespace myrender{
         createInfo.codeSize = fragSource.size();
         createInfo.pCode = (uint32_t*)fragSource.data();
         fragModule = Context::GetInstance().device.createShaderModule(createInfo);
+        InitStages();
 
     }
     Shader::~Shader() {
@@ -30,5 +31,19 @@ namespace myrender{
         device.destroyShaderModule(vertexModule);
         device.destroyShaderModule(fragModule);
 
+    }
+    void Shader::InitStages() {
+        _stages.resize(2);
+        _stages[0].setStage(vk::ShaderStageFlagBits::eVertex)
+                .setModule(vertexModule)
+                .setPName("main");
+
+        _stages[1].setStage(vk::ShaderStageFlagBits::eFragment)
+                .setModule(fragModule)
+                .setPName("main");
+
+    }
+    std::vector<vk::PipelineShaderStageCreateInfo> Shader::GetStages() {
+        return _stages;
     }
 }

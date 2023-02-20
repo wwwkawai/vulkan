@@ -8,9 +8,12 @@ namespace myrender {
         Context::Init(extensions,func);
         Context::GetInstance().InitSwapchain(w,h);
         Shader::Init(ReadWholeFile("./vert.spv"), ReadWholeFile("./frag.spv"));
+        Context::GetInstance().renderProcess->InitpPipeline(w,h);
+
     }
 
     void Quit() {
+        Context::GetInstance().renderProcess.reset();
         Context::GetInstance().DestroySwapchain();
         Shader::Quit();
         Context::Quit();
