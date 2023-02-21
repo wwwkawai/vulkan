@@ -12,6 +12,7 @@
 #include "tool.hpp"
 #include "swapchain.hpp"
 #include "renderprocess.hpp"
+#include "render.hpp"
 namespace myrender{
     class Context final{
     public:
@@ -27,6 +28,7 @@ namespace myrender{
         vk::SurfaceKHR surface;
         std::unique_ptr<Swapchain> swapchain;
         std::unique_ptr<RenderProcess> renderProcess;
+        std::unique_ptr<Render> render;
 
 
         struct QueueFamilyIndices final {
@@ -40,6 +42,9 @@ namespace myrender{
         QueueFamilyIndices queueFamilyIndices;
         void InitSwapchain(int w, int h){
             swapchain.reset(new Swapchain(w,h));
+        }
+        void InitRender(){
+            render.reset(new Render);
         }
         void DestroySwapchain(){
             swapchain.reset();

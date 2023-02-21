@@ -13,9 +13,12 @@ namespace myrender {
         Context::GetInstance().swapchain->CreateFramebuffers(w,h);
         Context::GetInstance().renderProcess->InitpPipeline(w,h);
 
+        Context::GetInstance().InitRender();
     }
 
     void Quit() {
+        Context::GetInstance().device.waitIdle();
+        Context::GetInstance().render.reset();
         Context::GetInstance().renderProcess.reset();
         Context::GetInstance().DestroySwapchain();
         Shader::Quit();

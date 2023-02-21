@@ -9,5 +9,8 @@
 namespace myrender{
     void Init(const std::vector<const char *> &extensions, CreateSurfaceFunc func, int w, int h);
     void Quit();
+    inline Render& GetRender(){
+        return *Context::GetInstance().render;
+    }
 }
 #endif //VULKAN_MYRENDER_HPP

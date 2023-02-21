@@ -30,6 +30,8 @@ int main(int , char**) {
         }
         return surface;
     }, 1024, 720);
+    auto& render = myrender::GetRender();
+    render.Rendering();
     while (!windowClose) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
