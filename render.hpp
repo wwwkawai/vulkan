@@ -13,11 +13,13 @@ namespace myrender{
         void Rendering();
 
     private:
+        int MAX_FRAME_SIZE;
+        int cur_frame;
         vk::CommandPool cmdPool;
-        vk::CommandBuffer cmdBuf;
-        vk::Semaphore imageAvaliable;
-        vk::Semaphore imageDrawFinish;
-        vk::Fence cmdAvailble;
+        std::vector<vk::CommandBuffer> cmdBuffer;
+        std::vector<vk::Semaphore> imageAvailable;
+        std::vector<vk::Semaphore> imageDrawFinish;
+        std::vector<vk::Fence> cmdAvailable;
         void InitCmdPool();
         void AllocCmdBuf();
         void CreateFences();
