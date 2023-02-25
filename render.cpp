@@ -5,24 +5,34 @@
 #include "render.hpp"
 #include "context.hpp"
 #include <limits>
+#include "vertex.hpp"
 namespace myrender {
+
+    std::array<Vec2f,3> vertices = {
+            Vec2f(0.,-0.7),
+            Vec2f(0.7,0.7),
+            Vec2f(-0.7,0.7)
+    };
+
     Render::Render() {
         MAX_FRAME_SIZE = 2;
         cur_frame = 0;
-        InitCmdPool();
         AllocCmdBuf();
         CreateSemaphores();
         CreateFences();
+        CreateVertexBuf();
+        BufVertexData();
     }
 
     Render::~Render() {
+        hostVertexBuf.reset();
+        deviceVertexBuf.reset();
         auto &device = Context::GetInstance().device;
-        if (!device)
-            std::cout << "Access device failed!" << std::endl;
-        for(auto& cmdBuf:cmdBuffer){
-            device.freeCommandBuffers(cmdPool, cmdBuf);
+        /*
+        for(auto &cmdBuf:cmdBuffer) {
+            Context::GetInstance().commandManager->FreeCmd(cmdBuf);
         }
-        device.destroyCommandPool(cmdPool);
+         */
         for (auto &imageAvai: imageAvailable) {
             device.destroySemaphore(imageAvai);
         }
@@ -37,22 +47,14 @@ namespace myrender {
 
     }
 
-    void Render::InitCmdPool() {
-        vk::CommandPoolCreateInfo createInfo;
-        createInfo.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
-        cmdPool = Context::GetInstance().device.createCommandPool(createInfo);
-    }
-
     void Render::AllocCmdBuf() {
+        cmdBuffer = Context::GetInstance().commandManager->CreateCommandBuffers(MAX_FRAME_SIZE);
+        /*
         cmdBuffer.resize(MAX_FRAME_SIZE);
         for(int i=0;i<MAX_FRAME_SIZE;i++) {
-            vk::CommandBufferAllocateInfo allocateInfo;
-            allocateInfo.setCommandPool(cmdPool)
-                    .setCommandBufferCount(1)
-                    .setLevel(vk::CommandBufferLevel::ePrimary);
-            cmdBuffer[i] = Context::GetInstance().device.allocateCommandBuffers(allocateInfo)[0];
+            cmdBuffer[i] = Context::GetInstance().commandManager->CreateOneCommandBuffer();
         }
-
+         */
     }
 
     void Render::CreateFences() {
@@ -64,6 +66,33 @@ namespace myrender {
         }
     }
 
+    void Render::CreateVertexBuf() {
+        hostVertexBuf.reset(new Buffer(sizeof(vertices),vk::BufferUsageFlagBits::eTransferSrc,vk::MemoryPropertyFlagBits::eHostVisible|vk::MemoryPropertyFlagBits::eHostCoherent));
+        deviceVertexBuf.reset(new Buffer(sizeof(vertices),vk::BufferUsageFlagBits::eTransferDst|vk::BufferUsageFlagBits::eVertexBuffer,vk::MemoryPropertyFlagBits::eDeviceLocal));
+    }
+    void Render::BufVertexData() {
+        void *ptr = Context::GetInstance().device.mapMemory(hostVertexBuf->memory, 0, hostVertexBuf->size);
+        memcpy(ptr,vertices.data(),sizeof(vertices));
+        Context::GetInstance().device.unmapMemory(hostVertexBuf->memory);
+        auto cmdBuf = Context::GetInstance().commandManager->CreateOneCommandBuffer();
+        vk::CommandBufferBeginInfo beginInfo;
+        beginInfo.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+        cmdBuf.begin(beginInfo); {
+            vk::BufferCopy region;
+            region.setSize(hostVertexBuf->size)
+            .setSrcOffset(0)
+            .setDstOffset(0);
+            cmdBuf.copyBuffer(hostVertexBuf->buffer,deviceVertexBuf->buffer,region);
+        } cmdBuf.end();
+        vk::SubmitInfo submitInfo;
+        submitInfo.setCommandBuffers(cmdBuf);
+        Context::GetInstance().graphicsQueue.submit(submitInfo);
+        Context::GetInstance().device.waitIdle();
+        Context::GetInstance().commandManager->FreeCmd(cmdBuf);
+
+
+
+    }
     void Render::CreateSemaphores() {
         auto &device = Context::GetInstance().device;
         imageAvailable.resize(MAX_FRAME_SIZE);
@@ -112,6 +141,9 @@ namespace myrender {
                     .setRenderArea(area)
                     .setFramebuffer(swapchain->framebuffers[imageIndex])
                     .setClearValues(clearValue);
+
+            vk::DeviceSize offset = 0;
+            cmdBuf.bindVertexBuffers(0, deviceVertexBuf->buffer, offset);
             cmdBuf.beginRenderPass(renderPassBeginInfo, {});
             {
                 cmdBuf.draw(3, 1, 0, 0);

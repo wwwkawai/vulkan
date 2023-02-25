@@ -12,12 +12,13 @@ namespace myrender {
         Context::GetInstance().renderProcess->InitLayout();
         Context::GetInstance().swapchain->CreateFramebuffers(w,h);
         Context::GetInstance().renderProcess->InitpPipeline(w,h);
-
+        Context::GetInstance().InitCommandManager();
         Context::GetInstance().InitRender();
     }
 
     void Quit() {
         Context::GetInstance().device.waitIdle();
+        Context::GetInstance().commandManager.reset();
         Context::GetInstance().render.reset();
         Context::GetInstance().renderProcess.reset();
         Context::GetInstance().DestroySwapchain();

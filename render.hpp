@@ -5,6 +5,8 @@
 #ifndef VULKAN_RENDER_HPP
 #define VULKAN_RENDER_HPP
 #include "vulkan/vulkan.hpp"
+#include "memory"
+#include "buffer.hpp"
 namespace myrender{
     class Render final{
     public:
@@ -15,12 +17,14 @@ namespace myrender{
     private:
         int MAX_FRAME_SIZE;
         int cur_frame;
-        vk::CommandPool cmdPool;
         std::vector<vk::CommandBuffer> cmdBuffer;
         std::vector<vk::Semaphore> imageAvailable;
         std::vector<vk::Semaphore> imageDrawFinish;
         std::vector<vk::Fence> cmdAvailable;
-        void InitCmdPool();
+        std::unique_ptr<Buffer> hostVertexBuf;
+        std::unique_ptr<Buffer> deviceVertexBuf;
+        void CreateVertexBuf();
+        void BufVertexData();
         void AllocCmdBuf();
         void CreateFences();
         void CreateSemaphores();

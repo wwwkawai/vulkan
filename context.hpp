@@ -13,6 +13,7 @@
 #include "swapchain.hpp"
 #include "renderprocess.hpp"
 #include "render.hpp"
+#include "command.hpp"
 namespace myrender{
     class Context final{
     public:
@@ -29,7 +30,7 @@ namespace myrender{
         std::unique_ptr<Swapchain> swapchain;
         std::unique_ptr<RenderProcess> renderProcess;
         std::unique_ptr<Render> render;
-
+        std::unique_ptr<CommandManager> commandManager;
 
         struct QueueFamilyIndices final {
             std::optional<uint32_t> graphicsQueue;
@@ -45,6 +46,9 @@ namespace myrender{
         }
         void InitRender(){
             render.reset(new Render);
+        }
+        void InitCommandManager(){
+            commandManager = std::make_unique<CommandManager>();
         }
         void DestroySwapchain(){
             swapchain.reset();

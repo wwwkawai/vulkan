@@ -5,12 +5,17 @@
 #include "renderprocess.hpp"
 #include "shader.hpp"
 #include "context.hpp"
+#include "vertex.hpp"
 
 namespace myrender{
     void RenderProcess::InitpPipeline(int width, int height) {
         vk::GraphicsPipelineCreateInfo createInfo;
         //vertext input
         vk::PipelineVertexInputStateCreateInfo inputState;
+        auto attr = Vec2f::GetAttriDesc();
+        auto bind = Vec2f::GetBindDesc();
+        inputState.setVertexAttributeDescriptions(attr)
+        .setVertexBindingDescriptions(bind);
         createInfo.setPVertexInputState(&inputState);
         //vertex assembly
         vk::PipelineInputAssemblyStateCreateInfo inputAsm;
