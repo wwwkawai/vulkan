@@ -23,6 +23,8 @@ namespace myrender{
         std::vector<vk::Fence> cmdAvailable;
         std::unique_ptr<Buffer> hostVertexBuf;
         std::unique_ptr<Buffer> deviceVertexBuf;
+        std::unique_ptr<Buffer> hostIndicesBuf;
+        std::unique_ptr<Buffer> deviceIndicesBuf;
         std::vector<std::unique_ptr<Buffer>> hostUniformBuf;
         std::vector<std::unique_ptr<Buffer>> deviceUniformBuf;
         vk::DescriptorPool descPool;
@@ -37,6 +39,8 @@ namespace myrender{
         void CreateSemaphores();
         void CreateDescriptorPool();
         void UpdateDescriptorSets();
+        void CreateIndicesBuf();
+        void BufIndicesData();
         void CopyFromBuf(vk::Buffer& src, vk::Buffer& dst, size_t size, size_t srcOffset, size_t dstOffset);
 
     };

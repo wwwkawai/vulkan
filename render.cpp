@@ -9,12 +9,14 @@
 #include "uniform.hpp"
 namespace myrender {
 
-    std::array<Vec2f,3> vertices = {
-            Vec2f(0.,-0.7),
-            Vec2f(0.7,0.7),
-            Vec2f(-0.7,0.7)
+    std::array<Vec2f,4> vertices = {
+            Vec2f(-0.5,-0.5),
+            Vec2f(0.5,-0.5),
+            Vec2f(0.5,0.5),
+            Vec2f(-0.5,0.5)
     };
-    Uniform uniform {Color{0.0,1.0,0.0}};
+    const std::vector<uint16_t> indices = {0,1,2,2,3,0};
+    Uniform uniform {Color{1.0,0.0,0.0}};
 
     Render::Render() {
         MAX_FRAME_SIZE = 2;
@@ -24,6 +26,8 @@ namespace myrender {
         CreateFences();
         CreateVertexBuf();
         BufVertexData();
+        CreateIndicesBuf();
+        BufIndicesData();
         CreateUniformBuf();
         BufUniformData();
         CreateDescriptorPool();
@@ -32,8 +36,11 @@ namespace myrender {
     }
 
     Render::~Render() {
+        hostIndicesBuf.reset();
+        deviceIndicesBuf.reset();
         hostVertexBuf.reset();
         deviceVertexBuf.reset();
+
         auto &device = Context::GetInstance().device;
 
         device.destroyDescriptorPool(descPool);
@@ -88,28 +95,24 @@ namespace myrender {
             deviceUniformBuf[i].reset(new Buffer(sizeof(uniform),vk::BufferUsageFlagBits::eUniformBuffer|vk::BufferUsageFlagBits::eTransferDst,vk::MemoryPropertyFlagBits::eDeviceLocal));
         }
     }
+    void Render::CreateIndicesBuf() {
+        hostIndicesBuf.reset(new Buffer(sizeof(indices),vk::BufferUsageFlagBits::eTransferSrc,vk::MemoryPropertyFlagBits::eHostVisible|vk::MemoryPropertyFlagBits::eHostCoherent));
+        deviceIndicesBuf.reset(new Buffer(sizeof(indices),vk::BufferUsageFlagBits::eTransferDst|vk::BufferUsageFlagBits::eIndexBuffer,vk::MemoryPropertyFlagBits::eDeviceLocal));
+
+
+    }
     void Render::BufVertexData() {
         void *ptr = Context::GetInstance().device.mapMemory(hostVertexBuf->memory, 0, hostVertexBuf->size);
         memcpy(ptr,vertices.data(),sizeof(vertices));
         Context::GetInstance().device.unmapMemory(hostVertexBuf->memory);
         CopyFromBuf(hostVertexBuf->buffer, deviceVertexBuf->buffer, hostVertexBuf->size, 0, 0);
-        /*
-        auto cmdBuf = Context::GetInstance().commandManager->CreateOneCommandBuffer();
-        vk::CommandBufferBeginInfo beginInfo;
-        beginInfo.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-        cmdBuf.begin(beginInfo); {
-            vk::BufferCopy region;
-            region.setSize(hostVertexBuf->size)
-            .setSrcOffset(0)
-            .setDstOffset(0);
-            cmdBuf.copyBuffer(hostVertexBuf->buffer,deviceVertexBuf->buffer,region);
-        } cmdBuf.end();
-        vk::SubmitInfo submitInfo;
-        submitInfo.setCommandBuffers(cmdBuf);
-        Context::GetInstance().graphicsQueue.submit(submitInfo);
-        Context::GetInstance().device.waitIdle();
-        Context::GetInstance().commandManager->FreeCmd(cmdBuf);
-        */
+
+    }
+    void Render::BufIndicesData() {
+        void *ptr = Context::GetInstance().device.mapMemory(hostIndicesBuf->memory, 0, hostIndicesBuf->size);
+        memcpy(ptr,indices.data(),sizeof(indices));
+        Context::GetInstance().device.unmapMemory(hostIndicesBuf->memory);
+        CopyFromBuf(hostIndicesBuf->buffer, deviceIndicesBuf->buffer, hostIndicesBuf->size,0,0);
     }
     void Render::BufUniformData() {
         for (int i = 0; i < MAX_FRAME_SIZE; i++) {
@@ -227,9 +230,11 @@ namespace myrender {
 
             vk::DeviceSize offset = 0;
             cmdBuf.bindVertexBuffers(0, deviceVertexBuf->buffer, offset);
+            cmdBuf.bindIndexBuffer(deviceIndicesBuf->buffer,offset,vk::IndexType::eUint16);
             cmdBuf.beginRenderPass(renderPassBeginInfo, {});
             {
-                cmdBuf.draw(3, 1, 0, 0);
+                cmdBuf.drawIndexed(indices.size(),1,0,0,0);
+                //cmdBuf.draw(3, 1, 0, 0);
             }
             cmdBuf.endRenderPass();
 
