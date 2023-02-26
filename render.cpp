@@ -6,6 +6,7 @@
 #include "context.hpp"
 #include <limits>
 #include "vertex.hpp"
+#include "uniform.hpp"
 namespace myrender {
 
     std::array<Vec2f,3> vertices = {
@@ -13,6 +14,7 @@ namespace myrender {
             Vec2f(0.7,0.7),
             Vec2f(-0.7,0.7)
     };
+    Uniform uniform {Color{0.0,1.0,0.0}};
 
     Render::Render() {
         MAX_FRAME_SIZE = 2;
@@ -22,17 +24,25 @@ namespace myrender {
         CreateFences();
         CreateVertexBuf();
         BufVertexData();
+        CreateUniformBuf();
+        BufUniformData();
+        CreateDescriptorPool();
+        CreateSets();
+        UpdateDescriptorSets();
     }
 
     Render::~Render() {
         hostVertexBuf.reset();
         deviceVertexBuf.reset();
         auto &device = Context::GetInstance().device;
-        /*
+
+        device.destroyDescriptorPool(descPool);
+        hostUniformBuf.clear();
+        deviceUniformBuf.clear();
         for(auto &cmdBuf:cmdBuffer) {
             Context::GetInstance().commandManager->FreeCmd(cmdBuf);
         }
-         */
+
         for (auto &imageAvai: imageAvailable) {
             device.destroySemaphore(imageAvai);
         }
@@ -70,10 +80,20 @@ namespace myrender {
         hostVertexBuf.reset(new Buffer(sizeof(vertices),vk::BufferUsageFlagBits::eTransferSrc,vk::MemoryPropertyFlagBits::eHostVisible|vk::MemoryPropertyFlagBits::eHostCoherent));
         deviceVertexBuf.reset(new Buffer(sizeof(vertices),vk::BufferUsageFlagBits::eTransferDst|vk::BufferUsageFlagBits::eVertexBuffer,vk::MemoryPropertyFlagBits::eDeviceLocal));
     }
+    void Render::CreateUniformBuf() {
+        hostUniformBuf.resize(MAX_FRAME_SIZE);
+        deviceUniformBuf.resize(MAX_FRAME_SIZE);
+        for(int i=0;i<MAX_FRAME_SIZE;i++){
+            hostUniformBuf[i].reset(new Buffer(sizeof(uniform),vk::BufferUsageFlagBits::eTransferSrc,vk::MemoryPropertyFlagBits::eHostVisible|vk::MemoryPropertyFlagBits::eHostCoherent));
+            deviceUniformBuf[i].reset(new Buffer(sizeof(uniform),vk::BufferUsageFlagBits::eUniformBuffer|vk::BufferUsageFlagBits::eTransferDst,vk::MemoryPropertyFlagBits::eDeviceLocal));
+        }
+    }
     void Render::BufVertexData() {
         void *ptr = Context::GetInstance().device.mapMemory(hostVertexBuf->memory, 0, hostVertexBuf->size);
         memcpy(ptr,vertices.data(),sizeof(vertices));
         Context::GetInstance().device.unmapMemory(hostVertexBuf->memory);
+        CopyFromBuf(hostVertexBuf->buffer, deviceVertexBuf->buffer, hostVertexBuf->size, 0, 0);
+        /*
         auto cmdBuf = Context::GetInstance().commandManager->CreateOneCommandBuffer();
         vk::CommandBufferBeginInfo beginInfo;
         beginInfo.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
@@ -89,7 +109,68 @@ namespace myrender {
         Context::GetInstance().graphicsQueue.submit(submitInfo);
         Context::GetInstance().device.waitIdle();
         Context::GetInstance().commandManager->FreeCmd(cmdBuf);
+        */
+    }
+    void Render::BufUniformData() {
+        for (int i = 0; i < MAX_FRAME_SIZE; i++) {
+            auto &buffer = hostUniformBuf[i];
+            void *ptr = Context::GetInstance().device.mapMemory(buffer->memory, 0, buffer->size);
+            memcpy(ptr, &uniform, sizeof(uniform));
+            Context::GetInstance().device.unmapMemory(buffer->memory);
+            CopyFromBuf(buffer->buffer, deviceUniformBuf[i]->buffer, buffer->size, 0, 0);
+        }
+    }
+    void Render::CopyFromBuf(vk::Buffer& src, vk::Buffer& dst, size_t size, size_t srcOffset, size_t dstOffset) {
+        auto cmdBuf = Context::GetInstance().commandManager->CreateOneCommandBuffer();
+        vk::CommandBufferBeginInfo beginInfo;
+        beginInfo.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+        cmdBuf.begin(beginInfo); {
+            vk::BufferCopy region;
+            region.setSize(size)
+                    .setSrcOffset(srcOffset)
+                    .setDstOffset(dstOffset);
+            cmdBuf.copyBuffer(src,dst,region);
+        } cmdBuf.end();
+        vk::SubmitInfo submitInfo;
+        submitInfo.setCommandBuffers(cmdBuf);
+        Context::GetInstance().graphicsQueue.submit(submitInfo);
+        Context::GetInstance().device.waitIdle();
+        Context::GetInstance().commandManager->FreeCmd(cmdBuf);
+    }
+    void Render::CreateDescriptorPool() {
+        vk::DescriptorPoolCreateInfo createInfo;
+        vk::DescriptorPoolSize poolSize;
+        poolSize.setDescriptorCount(MAX_FRAME_SIZE)
+        .setType(vk::DescriptorType::eUniformBuffer);
+        createInfo.setPoolSizes(poolSize)
+        .setMaxSets(MAX_FRAME_SIZE);
+        descPool = Context::GetInstance().device.createDescriptorPool(createInfo);
+    }
+    void Render::CreateSets() {
+        std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAME_SIZE, Context::GetInstance().renderProcess->setLayout);
+        vk::DescriptorSetAllocateInfo allocateInfo;
+        allocateInfo.setSetLayouts(layouts)
+        .setDescriptorPool(descPool)
+        .setDescriptorSetCount(MAX_FRAME_SIZE);
+        descSets = Context::GetInstance().device.allocateDescriptorSets(allocateInfo);
+    }
+    void Render::UpdateDescriptorSets() {
+        for(int i=0;i<descSets.size();i++){
+            auto& set = descSets[i];
+            vk::DescriptorBufferInfo bufferInfo;
+            bufferInfo.setOffset(0)
+            .setBuffer(deviceUniformBuf[i]->buffer)
+            .setRange(deviceUniformBuf[i]->size);
 
+            vk::WriteDescriptorSet writer;
+            writer.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+            .setDescriptorCount(1)
+            .setDstBinding(0)
+            .setBufferInfo(bufferInfo)
+            .setDstSet(set)
+            .setDstArrayElement(0);
+            Context::GetInstance().device.updateDescriptorSets(writer,{});
+        }
 
 
     }
@@ -141,6 +222,8 @@ namespace myrender {
                     .setRenderArea(area)
                     .setFramebuffer(swapchain->framebuffers[imageIndex])
                     .setClearValues(clearValue);
+
+            cmdBuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,Context::GetInstance().renderProcess->layout,0,descSets[cur_frame],{});
 
             vk::DeviceSize offset = 0;
             cmdBuf.bindVertexBuffers(0, deviceVertexBuf->buffer, offset);

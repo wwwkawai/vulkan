@@ -10,9 +10,12 @@ namespace myrender {
     public:
         vk::Pipeline pipeline;
         vk::PipelineLayout layout;
+        vk::DescriptorSetLayout setLayout;
         vk::RenderPass renderPass;
 
+        RenderProcess();
         ~RenderProcess();
+        void InitSetLayout();
         void InitLayout();
         void InitRenderPass();
         void InitpPipeline(int w, int h);

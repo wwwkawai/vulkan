@@ -8,8 +8,7 @@ namespace myrender {
         Context::Init(extensions,func);
         Context::GetInstance().InitSwapchain(w,h);
         Shader::Init(ReadWholeFile("./vert.spv"), ReadWholeFile("./frag.spv"));
-        Context::GetInstance().renderProcess->InitRenderPass();
-        Context::GetInstance().renderProcess->InitLayout();
+        Context::GetInstance().renderProcess.reset(new RenderProcess);
         Context::GetInstance().swapchain->CreateFramebuffers(w,h);
         Context::GetInstance().renderProcess->InitpPipeline(w,h);
         Context::GetInstance().InitCommandManager();
@@ -18,8 +17,8 @@ namespace myrender {
 
     void Quit() {
         Context::GetInstance().device.waitIdle();
-        Context::GetInstance().commandManager.reset();
         Context::GetInstance().render.reset();
+        Context::GetInstance().commandManager.reset();
         Context::GetInstance().renderProcess.reset();
         Context::GetInstance().DestroySwapchain();
         Shader::Quit();

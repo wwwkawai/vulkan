@@ -26,9 +26,8 @@ namespace myrender {
         QueryQueueFamilyIndices();
         CreateDevice();
         GetQueues();
-        renderProcess.reset(new RenderProcess);
-
     }
+
 
     Context::~Context() {
         instance.destroySurfaceKHR(surface);
@@ -52,6 +51,8 @@ namespace myrender {
         phyDevice = devices[0];
         std::cout << phyDevice.getProperties().deviceName << std::endl;
     }
+
+
 
     void Context::CreateDevice() {
         std::array extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};

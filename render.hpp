@@ -23,11 +23,21 @@ namespace myrender{
         std::vector<vk::Fence> cmdAvailable;
         std::unique_ptr<Buffer> hostVertexBuf;
         std::unique_ptr<Buffer> deviceVertexBuf;
+        std::vector<std::unique_ptr<Buffer>> hostUniformBuf;
+        std::vector<std::unique_ptr<Buffer>> deviceUniformBuf;
+        vk::DescriptorPool descPool;
+        std::vector<vk::DescriptorSet> descSets;
         void CreateVertexBuf();
+        void CreateUniformBuf();
         void BufVertexData();
+        void BufUniformData();
         void AllocCmdBuf();
+        void CreateSets();
         void CreateFences();
         void CreateSemaphores();
+        void CreateDescriptorPool();
+        void UpdateDescriptorSets();
+        void CopyFromBuf(vk::Buffer& src, vk::Buffer& dst, size_t size, size_t srcOffset, size_t dstOffset);
 
     };
 }

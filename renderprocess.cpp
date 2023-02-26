@@ -6,8 +6,14 @@
 #include "shader.hpp"
 #include "context.hpp"
 #include "vertex.hpp"
-
+#include "uniform.hpp"
 namespace myrender{
+    RenderProcess::RenderProcess() {
+        InitSetLayout();
+        InitLayout();
+        InitRenderPass();
+        pipeline = nullptr;
+    }
     void RenderProcess::InitpPipeline(int width, int height) {
         vk::GraphicsPipelineCreateInfo createInfo;
         //vertext input
@@ -78,8 +84,15 @@ namespace myrender{
 
 
     }
+    void RenderProcess::InitSetLayout() {
+        vk::DescriptorSetLayoutCreateInfo createInfo;
+        auto binding = Uniform::GetBinding();
+        createInfo.setBindings(binding);
+        setLayout = Context::GetInstance().device.createDescriptorSetLayout(createInfo);
+    }
     void RenderProcess::InitLayout() {
         vk::PipelineLayoutCreateInfo createInfo;
+        createInfo.setSetLayouts(setLayout);
         layout = Context::GetInstance().device.createPipelineLayout(createInfo);
 
     }
@@ -116,6 +129,7 @@ namespace myrender{
     }
     RenderProcess::~RenderProcess() {
         auto& device = Context::GetInstance().device;
+        device.destroyDescriptorSetLayout(setLayout);
         device.destroyRenderPass(renderPass);
         device.destroyPipelineLayout(layout);
         device.destroyPipeline(pipeline);
