@@ -1,7 +1,7 @@
 #version 450
 
 layout(location = 0) out vec4 outColor;
-layout(binding = 0) uniform UBO{
+layout(set = 0, binding = 1) uniform UBO{
     vec3 color;
 } ubo;
 
