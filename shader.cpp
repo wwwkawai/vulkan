@@ -4,6 +4,7 @@
 
 #include "shader.hpp"
 #include "context.hpp"
+#include "glm/glm.hpp"
 namespace myrender{
     std::unique_ptr<Shader> Shader::_instance = nullptr;
     void Shader::Init(const std::string &vertexSource, const std::string &fragSource) {
@@ -15,6 +16,7 @@ namespace myrender{
     Shader& Shader::GetInstance() {
         return *_instance;
     }
+
     Shader::Shader(const std::string &vertexSource, const std::string &fragSource) {
         vk::ShaderModuleCreateInfo createInfo;
         createInfo.codeSize = vertexSource.size();
@@ -31,6 +33,13 @@ namespace myrender{
         device.destroyShaderModule(vertexModule);
         device.destroyShaderModule(fragModule);
 
+    }
+    vk::PushConstantRange Shader::GetPushConstantRange() {
+        vk::PushConstantRange range;
+        range.setOffset(0)
+        .setStageFlags(vk::ShaderStageFlagBits::eVertex)
+        .setSize(sizeof(glm::mat4));
+        return range;
     }
     void Shader::InitStages() {
         _stages.resize(2);

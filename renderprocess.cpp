@@ -92,7 +92,9 @@ namespace myrender{
     }
     void RenderProcess::InitLayout() {
         vk::PipelineLayoutCreateInfo createInfo;
-        createInfo.setSetLayouts(setLayout);
+        auto range = Shader::GetInstance().GetPushConstantRange();
+        createInfo.setSetLayouts(setLayout)
+        .setPushConstantRanges(range);
         layout = Context::GetInstance().device.createPipelineLayout(createInfo);
 
     }

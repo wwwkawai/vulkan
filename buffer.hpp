@@ -11,6 +11,7 @@ namespace myrender {
         vk::Buffer buffer;
         vk::DeviceMemory memory;
         size_t size;
+        void* ptr;
         Buffer(size_t size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags property);
 
         ~Buffer();

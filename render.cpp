@@ -77,8 +77,8 @@ namespace myrender {
          */
     }
     void Render::InitMVP() {
-        ubo.model = glm::mat4(1.0f);
-        ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f,0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         int width = Context::GetInstance().swapchain->info.imageExtent.width;
         int height = Context::GetInstance().swapchain->info.imageExtent.height;
         ubo.proj = glm::perspective(glm::radians(45.0f),(float)width/(float)height,0.1f,10.0f);
@@ -101,8 +101,8 @@ namespace myrender {
         hostUniformBuf.resize(MAX_FRAME_SIZE);
         deviceUniformBuf.resize(MAX_FRAME_SIZE);
         for(int i=0;i<MAX_FRAME_SIZE;i++){
-            hostUniformBuf[i].reset(new Buffer(sizeof(ubo),vk::BufferUsageFlagBits::eTransferSrc,vk::MemoryPropertyFlagBits::eHostVisible|vk::MemoryPropertyFlagBits::eHostCoherent));
-            deviceUniformBuf[i].reset(new Buffer(sizeof(ubo),vk::BufferUsageFlagBits::eUniformBuffer|vk::BufferUsageFlagBits::eTransferDst,vk::MemoryPropertyFlagBits::eDeviceLocal));
+            hostUniformBuf[i].reset(new Buffer(sizeof(Uniform),vk::BufferUsageFlagBits::eTransferSrc,vk::MemoryPropertyFlagBits::eHostVisible|vk::MemoryPropertyFlagBits::eHostCoherent));
+            deviceUniformBuf[i].reset(new Buffer(sizeof(Uniform),vk::BufferUsageFlagBits::eUniformBuffer|vk::BufferUsageFlagBits::eTransferDst,vk::MemoryPropertyFlagBits::eDeviceLocal));
         }
     }
     void Render::CreateIndicesBuf() {
@@ -112,24 +112,18 @@ namespace myrender {
 
     }
     void Render::BufVertexData() {
-        void *ptr = Context::GetInstance().device.mapMemory(hostVertexBuf->memory, 0, hostVertexBuf->size);
-        memcpy(ptr,vertices.data(),sizeof(vertices));
-        Context::GetInstance().device.unmapMemory(hostVertexBuf->memory);
+        memcpy(hostVertexBuf->ptr,vertices.data(),sizeof(vertices));
         CopyFromBuf(hostVertexBuf->buffer, deviceVertexBuf->buffer, hostVertexBuf->size, 0, 0);
 
     }
     void Render::BufIndicesData() {
-        void *ptr = Context::GetInstance().device.mapMemory(hostIndicesBuf->memory, 0, hostIndicesBuf->size);
-        memcpy(ptr,indices.data(),sizeof(indices));
-        Context::GetInstance().device.unmapMemory(hostIndicesBuf->memory);
+        memcpy(hostIndicesBuf->ptr,indices.data(),sizeof(indices));
         CopyFromBuf(hostIndicesBuf->buffer, deviceIndicesBuf->buffer, hostIndicesBuf->size,0,0);
     }
     void Render::BufUniformData() {
         for (int i = 0; i < MAX_FRAME_SIZE; i++) {
             auto &buffer = hostUniformBuf[i];
-            void *ptr = Context::GetInstance().device.mapMemory(buffer->memory, 0, buffer->size);
-            memcpy(ptr, &ubo, sizeof(ubo));
-            Context::GetInstance().device.unmapMemory(buffer->memory);
+            memcpy(buffer->ptr, &ubo, sizeof(ubo));
             CopyFromBuf(buffer->buffer, deviceUniformBuf[i]->buffer, buffer->size, 0, 0);
         }
     }
@@ -153,7 +147,7 @@ namespace myrender {
     void Render::CreateDescriptorPool() {
         vk::DescriptorPoolCreateInfo createInfo;
         vk::DescriptorPoolSize poolSize;
-        poolSize.setDescriptorCount(MAX_FRAME_SIZE)
+        poolSize.setDescriptorCount(1)
         .setType(vk::DescriptorType::eUniformBuffer);
         createInfo.setPoolSizes(poolSize)
         .setMaxSets(MAX_FRAME_SIZE);
@@ -243,6 +237,8 @@ namespace myrender {
             cmdBuf.bindIndexBuffer(deviceIndicesBuf->buffer,offset,vk::IndexType::eUint16);
             cmdBuf.beginRenderPass(renderPassBeginInfo, {});
             {
+                auto model = glm::mat4(1.0f);
+                cmdBuf.pushConstants(renderProcess->layout,vk::ShaderStageFlagBits::eVertex,0, sizeof(glm::mat4),&model);
                 cmdBuf.drawIndexed(indices.size(),1,0,0,0);
                 //cmdBuf.draw(3, 1, 0, 0);
             }

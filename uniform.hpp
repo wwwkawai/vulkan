@@ -11,8 +11,8 @@
 namespace myrender {
     struct Uniform final {
         glm::mat4 model;
-        glm::mat4 proj;
         glm::mat4 view;
+        glm::mat4 proj;
         static vk::DescriptorSetLayoutBinding GetBinding(){
             vk::DescriptorSetLayoutBinding binding;
             binding.setBinding(0)

@@ -10,9 +10,17 @@ namespace myrender{
         auto info = QueryMemoryInfo(property);
         AllocateMemory(info);
         BindMem2Buf();
+        if(property & vk::MemoryPropertyFlagBits::eHostVisible){
+            ptr = Context::GetInstance().device.mapMemory(memory, 0, size);
+        }else{
+            ptr = nullptr;
+        }
     }
     Buffer::~Buffer() {
         auto& device = Context::GetInstance().device;
+        if(ptr){
+            device.unmapMemory(memory);
+        }
         device.freeMemory(memory);
         device.destroyBuffer(buffer);
     }

@@ -18,6 +18,7 @@ namespace myrender{
         ~Shader();
 
         std::vector<vk::PipelineShaderStageCreateInfo> GetStages();
+        vk::PushConstantRange GetPushConstantRange();
     private:
         std::vector<vk::PipelineShaderStageCreateInfo> _stages;
         static std::unique_ptr<Shader> _instance;
