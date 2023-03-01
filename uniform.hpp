@@ -6,21 +6,23 @@
 #define VULKAN_UNIFORM_HPP
 
 #include "vulkan/vulkan.hpp"
+#include "vertex.hpp"
+#include "glm/glm.hpp"
 namespace myrender {
-    struct Color final{
-        float r,g,b;
-    };
     struct Uniform final {
-        Color color;
+        glm::mat4 model;
+        glm::mat4 proj;
+        glm::mat4 view;
         static vk::DescriptorSetLayoutBinding GetBinding(){
             vk::DescriptorSetLayoutBinding binding;
             binding.setBinding(0)
             .setDescriptorType(vk::DescriptorType::eUniformBuffer)
             .setDescriptorCount(1)
-            .setStageFlags(vk::ShaderStageFlagBits::eFragment);
+            .setStageFlags(vk::ShaderStageFlagBits::eVertex);
             return binding;
         }
     };
+
 }
 
 

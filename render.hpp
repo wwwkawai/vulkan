@@ -41,6 +41,7 @@ namespace myrender{
         void UpdateDescriptorSets();
         void CreateIndicesBuf();
         void BufIndicesData();
+        void InitMVP();
         void CopyFromBuf(vk::Buffer& src, vk::Buffer& dst, size_t size, size_t srcOffset, size_t dstOffset);
 
     };

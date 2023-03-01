@@ -18,8 +18,8 @@ namespace myrender{
         vk::GraphicsPipelineCreateInfo createInfo;
         //vertext input
         vk::PipelineVertexInputStateCreateInfo inputState;
-        auto attr = Vec2f::GetAttriDesc();
-        auto bind = Vec2f::GetBindDesc();
+        auto attr = Vertex::GetAttriDesc();
+        auto bind = Vertex::GetBindDesc();
         inputState.setVertexAttributeDescriptions(attr)
         .setVertexBindingDescriptions(bind);
         createInfo.setPVertexInputState(&inputState);
@@ -45,7 +45,7 @@ namespace myrender{
         vk::PipelineRasterizationStateCreateInfo rastInfo;
         rastInfo.setRasterizerDiscardEnable(false)
         .setCullMode(vk::CullModeFlagBits::eBack)
-        .setFrontFace(vk::FrontFace::eClockwise)
+        .setFrontFace(vk::FrontFace::eCounterClockwise)
         .setPolygonMode(vk::PolygonMode::eFill)
         .setLineWidth(1);
         createInfo.setPRasterizationState(&rastInfo);

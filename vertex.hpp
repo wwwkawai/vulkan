@@ -7,6 +7,13 @@
 
 #include "vulkan/vulkan.hpp"
 namespace myrender {
+
+    struct Color {
+        float r, g, b;
+
+        Color(float r, float g, float b) : r(r), g(g), b(b) {}
+    };
+
     struct Vec2f final {
         float x, y;
 
@@ -32,6 +39,33 @@ namespace myrender {
             return bind;
         }
     };
+    class Vertex final{
+    public:
+        Vec2f pos;
+        Color color;
+        Vertex(float x, float y, float r, float g, float b):pos(x,y), color(r,g,b){}
+        static std::vector<vk::VertexInputAttributeDescription> GetAttriDesc() {
+            std::vector<vk::VertexInputAttributeDescription> attr(2);
+            attr[0].setBinding(0)
+                    .setFormat(vk::Format::eR32G32Sfloat)
+                    .setLocation(0)
+                    .setOffset(offsetof(Vertex,pos));
+            attr[1].setBinding(0)
+                    .setFormat(vk::Format::eR32G32B32Sfloat)
+                    .setLocation(1)
+                    .setOffset(offsetof(Vertex,color));
+            return attr;
+        }
+
+        static vk::VertexInputBindingDescription GetBindDesc() {
+            vk::VertexInputBindingDescription bind;
+            bind.setBinding(0)
+                    .setInputRate(vk::VertexInputRate::eVertex)
+                    .setStride(sizeof(Vertex));
+            return bind;
+        }
+    };
+
 
     struct Vec {
         union {

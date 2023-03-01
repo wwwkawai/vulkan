@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 3.23)
 project(vulkan)
-
+include_directories("E:/master/vulkan/glm")
 set(CMAKE_CXX_STANDARD 17)
 set(SDL_DIR "D:/Program Files/SDL2-2.26.3/x86_64-w64-mingw32/lib/cmake/SDL2/sdl2-config.cmake")
 include("${SDL_DIR}")

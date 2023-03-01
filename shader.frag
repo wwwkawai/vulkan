@@ -1,10 +1,8 @@
 #version 450
 
 layout(location = 0) out vec4 outColor;
-layout(set = 0, binding = 1) uniform UBO{
-    vec3 color;
-} ubo;
+layout(location = 1) in vec3 fragColor;
 
 void main() {
-    outColor = vec4(ubo.color, 1.);
+    outColor = vec4(fragColor, 1.);
 }

@@ -7,18 +7,20 @@
 #include <limits>
 #include "vertex.hpp"
 #include "uniform.hpp"
+#include <glm/gtc/matrix_transform.hpp>
 namespace myrender {
 
-    std::array<Vec2f,4> vertices = {
-            Vec2f(-0.5,-0.5),
-            Vec2f(0.5,-0.5),
-            Vec2f(0.5,0.5),
-            Vec2f(-0.5,0.5)
+    std::array<Vertex,4> vertices = {
+            Vertex(-0.5,-0.5,1.0,0.0,0.0),
+            Vertex(0.5,-0.5,0.0,1.0,0.0),
+            Vertex(0.5,0.5,0.0,0.0,1.0),
+            Vertex(-0.5,0.5,1.0,1.0,1.0)
     };
     const std::vector<uint16_t> indices = {0,1,2,2,3,0};
-    Uniform uniform {Color{1.0,0.0,0.0}};
+    Uniform ubo;
 
     Render::Render() {
+
         MAX_FRAME_SIZE = 2;
         cur_frame = 0;
         AllocCmdBuf();
@@ -28,6 +30,7 @@ namespace myrender {
         BufVertexData();
         CreateIndicesBuf();
         BufIndicesData();
+        InitMVP();
         CreateUniformBuf();
         BufUniformData();
         CreateDescriptorPool();
@@ -73,7 +76,14 @@ namespace myrender {
         }
          */
     }
-
+    void Render::InitMVP() {
+        ubo.model = glm::mat4(1.0f);
+        ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f,0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        int width = Context::GetInstance().swapchain->info.imageExtent.width;
+        int height = Context::GetInstance().swapchain->info.imageExtent.height;
+        ubo.proj = glm::perspective(glm::radians(45.0f),(float)width/(float)height,0.1f,10.0f);
+        ubo.proj[1][1]*=-1.0;
+    }
     void Render::CreateFences() {
         cmdAvailable.resize(MAX_FRAME_SIZE);
         for (int i = 0; i < MAX_FRAME_SIZE; i++) {
@@ -91,8 +101,8 @@ namespace myrender {
         hostUniformBuf.resize(MAX_FRAME_SIZE);
         deviceUniformBuf.resize(MAX_FRAME_SIZE);
         for(int i=0;i<MAX_FRAME_SIZE;i++){
-            hostUniformBuf[i].reset(new Buffer(sizeof(uniform),vk::BufferUsageFlagBits::eTransferSrc,vk::MemoryPropertyFlagBits::eHostVisible|vk::MemoryPropertyFlagBits::eHostCoherent));
-            deviceUniformBuf[i].reset(new Buffer(sizeof(uniform),vk::BufferUsageFlagBits::eUniformBuffer|vk::BufferUsageFlagBits::eTransferDst,vk::MemoryPropertyFlagBits::eDeviceLocal));
+            hostUniformBuf[i].reset(new Buffer(sizeof(ubo),vk::BufferUsageFlagBits::eTransferSrc,vk::MemoryPropertyFlagBits::eHostVisible|vk::MemoryPropertyFlagBits::eHostCoherent));
+            deviceUniformBuf[i].reset(new Buffer(sizeof(ubo),vk::BufferUsageFlagBits::eUniformBuffer|vk::BufferUsageFlagBits::eTransferDst,vk::MemoryPropertyFlagBits::eDeviceLocal));
         }
     }
     void Render::CreateIndicesBuf() {
@@ -118,7 +128,7 @@ namespace myrender {
         for (int i = 0; i < MAX_FRAME_SIZE; i++) {
             auto &buffer = hostUniformBuf[i];
             void *ptr = Context::GetInstance().device.mapMemory(buffer->memory, 0, buffer->size);
-            memcpy(ptr, &uniform, sizeof(uniform));
+            memcpy(ptr, &ubo, sizeof(ubo));
             Context::GetInstance().device.unmapMemory(buffer->memory);
             CopyFromBuf(buffer->buffer, deviceUniformBuf[i]->buffer, buffer->size, 0, 0);
         }
