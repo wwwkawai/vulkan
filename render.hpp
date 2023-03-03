@@ -7,6 +7,7 @@
 #include "vulkan/vulkan.hpp"
 #include "memory"
 #include "buffer.hpp"
+#include "texture.hpp"
 namespace myrender{
     class Render final{
     public:
@@ -29,6 +30,8 @@ namespace myrender{
         std::vector<std::unique_ptr<Buffer>> deviceUniformBuf;
         vk::DescriptorPool descPool;
         std::vector<vk::DescriptorSet> descSets;
+        vk::Sampler sampler;
+        std::unique_ptr<Texture> texture;
         void CreateVertexBuf();
         void CreateUniformBuf();
         void BufVertexData();
@@ -42,6 +45,8 @@ namespace myrender{
         void CreateIndicesBuf();
         void BufIndicesData();
         void InitMVP();
+        void CreateSampler();
+        void CreateTexture();
         void CopyFromBuf(vk::Buffer& src, vk::Buffer& dst, size_t size, size_t srcOffset, size_t dstOffset);
 
     };

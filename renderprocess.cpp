@@ -86,8 +86,13 @@ namespace myrender{
     }
     void RenderProcess::InitSetLayout() {
         vk::DescriptorSetLayoutCreateInfo createInfo;
-        auto binding = Uniform::GetBinding();
-        createInfo.setBindings(binding);
+        std::vector<vk::DescriptorSetLayoutBinding> bindings(2);
+        bindings[0] = Uniform::GetBinding();
+        bindings[1].setBinding(1)
+        .setDescriptorCount(1)
+        .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+        .setStageFlags(vk::ShaderStageFlagBits::eFragment);
+        createInfo.setBindings(bindings);
         setLayout = Context::GetInstance().device.createDescriptorSetLayout(createInfo);
     }
     void RenderProcess::InitLayout() {

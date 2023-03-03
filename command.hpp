@@ -5,6 +5,7 @@
 #ifndef VULKAN_COMMAND_HPP
 #define VULKAN_COMMAND_HPP
 #include "vulkan/vulkan.hpp"
+#include <functional>
 namespace myrender {
     class CommandManager final {
     public:
@@ -19,6 +20,8 @@ namespace myrender {
         void ResetCmds();
 
         void FreeCmd(vk::CommandBuffer& buffer);
+        using WriteCmdBuffer = std::function<void(vk::CommandBuffer&)>;
+        void ExecuteCmd(vk::Queue queue, WriteCmdBuffer func);
 
     private:
         vk::CommandPool pool;

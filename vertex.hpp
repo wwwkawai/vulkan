@@ -43,9 +43,10 @@ namespace myrender {
     public:
         Vec2f pos;
         Color color;
-        Vertex(float x, float y, float r, float g, float b):pos(x,y), color(r,g,b){}
+        Vec2f texcoord;
+        Vertex(float x, float y, float r, float g, float b, float u, float v):pos(x,y), color(r,g,b), texcoord(u,v){}
         static std::vector<vk::VertexInputAttributeDescription> GetAttriDesc() {
-            std::vector<vk::VertexInputAttributeDescription> attr(2);
+            std::vector<vk::VertexInputAttributeDescription> attr(3);
             attr[0].setBinding(0)
                     .setFormat(vk::Format::eR32G32Sfloat)
                     .setLocation(0)
@@ -54,6 +55,10 @@ namespace myrender {
                     .setFormat(vk::Format::eR32G32B32Sfloat)
                     .setLocation(1)
                     .setOffset(offsetof(Vertex,color));
+            attr[2].setBinding(0)
+                    .setFormat(vk::Format::eR32G32Sfloat)
+                    .setLocation(2)
+                    .setOffset(offsetof(Vertex,texcoord));
             return attr;
         }
 

@@ -11,10 +11,10 @@
 namespace myrender {
 
     std::array<Vertex,4> vertices = {
-            Vertex(-0.5,-0.5,1.0,0.0,0.0),
-            Vertex(0.5,-0.5,0.0,1.0,0.0),
-            Vertex(0.5,0.5,0.0,0.0,1.0),
-            Vertex(-0.5,0.5,1.0,1.0,1.0)
+            Vertex(-0.5,-0.5,1.0,0.0,0.0,0.0,0.0),
+            Vertex(0.5,-0.5,0.0,1.0,0.0,0.0,1.0),
+            Vertex(0.5,0.5,0.0,0.0,1.0,1.0,1.0),
+            Vertex(-0.5,0.5,1.0,1.0,1.0,1.0,0.0)
     };
     const std::vector<uint16_t> indices = {0,1,2,2,3,0};
     Uniform ubo;
@@ -33,6 +33,8 @@ namespace myrender {
         InitMVP();
         CreateUniformBuf();
         BufUniformData();
+        CreateTexture();
+        CreateSampler();
         CreateDescriptorPool();
         CreateSets();
         UpdateDescriptorSets();
@@ -52,7 +54,8 @@ namespace myrender {
         for(auto &cmdBuf:cmdBuffer) {
             Context::GetInstance().commandManager->FreeCmd(cmdBuf);
         }
-
+        device.destroySampler(sampler);
+        texture.reset();
         for (auto &imageAvai: imageAvailable) {
             device.destroySemaphore(imageAvai);
         }
@@ -146,9 +149,11 @@ namespace myrender {
     }
     void Render::CreateDescriptorPool() {
         vk::DescriptorPoolCreateInfo createInfo;
-        vk::DescriptorPoolSize poolSize;
-        poolSize.setDescriptorCount(1)
+        std::vector<vk::DescriptorPoolSize> poolSize(2);
+        poolSize[0].setDescriptorCount(MAX_FRAME_SIZE)
         .setType(vk::DescriptorType::eUniformBuffer);
+        poolSize[1].setDescriptorCount(MAX_FRAME_SIZE)
+        .setType(vk::DescriptorType::eCombinedImageSampler);
         createInfo.setPoolSizes(poolSize)
         .setMaxSets(MAX_FRAME_SIZE);
         descPool = Context::GetInstance().device.createDescriptorPool(createInfo);
@@ -169,18 +174,52 @@ namespace myrender {
             .setBuffer(deviceUniformBuf[i]->buffer)
             .setRange(deviceUniformBuf[i]->size);
 
-            vk::WriteDescriptorSet writer;
-            writer.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+            std::vector<vk::WriteDescriptorSet> writer(2);
+            writer[0].setDescriptorType(vk::DescriptorType::eUniformBuffer)
             .setDescriptorCount(1)
             .setDstBinding(0)
             .setBufferInfo(bufferInfo)
             .setDstSet(set)
             .setDstArrayElement(0);
+
+            vk::DescriptorImageInfo imageInfo;
+            imageInfo.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+            .setImageView(texture->imageView)
+            .setSampler(sampler);
+
+            writer[1].setImageInfo(imageInfo)
+            .setDstBinding(1)
+            .setDstArrayElement(0)
+            .setDescriptorCount(1)
+            .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+            .setDstSet(set);
+
+
             Context::GetInstance().device.updateDescriptorSets(writer,{});
         }
 
 
     }
+
+    void Render::CreateSampler() {
+        vk::SamplerCreateInfo createInfo;
+        createInfo.setMagFilter(vk::Filter::eLinear)
+        .setMinFilter(vk::Filter::eLinear)
+        .setAddressModeU(vk::SamplerAddressMode::eRepeat)
+        .setAddressModeV(vk::SamplerAddressMode::eRepeat)
+        .setAddressModeW(vk::SamplerAddressMode::eRepeat)
+        .setAnisotropyEnable(false)
+        .setMipmapMode(vk::SamplerMipmapMode::eLinear)
+        .setBorderColor(vk::BorderColor::eIntOpaqueBlack)
+        .setUnnormalizedCoordinates(false)
+        .setCompareEnable(false);
+        sampler = Context::GetInstance().device.createSampler(createInfo);
+    }
+    void Render::CreateTexture() {
+        texture.reset(new Texture("./texture.jpg"));
+    }
+
+
     void Render::CreateSemaphores() {
         auto &device = Context::GetInstance().device;
         imageAvailable.resize(MAX_FRAME_SIZE);

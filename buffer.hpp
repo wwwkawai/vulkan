@@ -30,7 +30,7 @@ namespace myrender {
 
         MemoryInfo QueryMemoryInfo(vk::MemoryPropertyFlags property);
     };
-
+    std::uint32_t QueryBufferMemTypeIndex(std::uint32_t type, vk::MemoryPropertyFlags flag);
 
 }
 #endif //VULKAN_BUFFER_HPP

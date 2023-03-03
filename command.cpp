@@ -34,5 +34,19 @@ namespace myrender{
     void CommandManager::FreeCmd(vk::CommandBuffer& buffer) {
         Context::GetInstance().device.freeCommandBuffers(pool,buffer);
     }
+    void CommandManager::ExecuteCmd(vk::Queue queue, myrender::CommandManager::WriteCmdBuffer func) {
+        auto cmdBuf = CreateOneCommandBuffer();
+        vk::CommandBufferBeginInfo beginInfo;
+        beginInfo.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+        cmdBuf.begin(beginInfo);
+        if (func) func(cmdBuf);
+        cmdBuf.end();
+        vk::SubmitInfo submitInfo;
+        submitInfo.setCommandBuffers(cmdBuf);
+        queue.submit(submitInfo);
+        queue.waitIdle();
+        Context::GetInstance().device.waitIdle();
+        FreeCmd(cmdBuf);
+    }
 
 }
