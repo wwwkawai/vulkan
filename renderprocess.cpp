@@ -61,13 +61,20 @@ namespace myrender{
         //Color blending
         vk::PipelineColorBlendStateCreateInfo blend;
         vk::PipelineColorBlendAttachmentState attachs;
-        attachs.setBlendEnable(false)
+        attachs.setBlendEnable(true)
         .setColorWriteMask(vk::ColorComponentFlagBits::eA
         |vk::ColorComponentFlagBits::eB
         |vk::ColorComponentFlagBits::eG
-        |vk::ColorComponentFlagBits::eR);
+        |vk::ColorComponentFlagBits::eR)
+        .setSrcColorBlendFactor(vk::BlendFactor::eOne)
+        .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
+        .setColorBlendOp(vk::BlendOp::eAdd)
+        .setSrcAlphaBlendFactor(vk::BlendFactor::eOne)
+        .setDstAlphaBlendFactor(vk::BlendFactor::eZero)
+        .setAlphaBlendOp(vk::BlendOp::eAdd);
         blend.setLogicOpEnable(false)
-        .setAttachments(attachs);
+        .setAttachments(attachs)
+        .setLogicOp(vk::LogicOp::eOrReverse);
         createInfo.setPColorBlendState(&blend);
 
         //RenderPass and Layout

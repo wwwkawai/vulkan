@@ -216,7 +216,8 @@ namespace myrender {
         sampler = Context::GetInstance().device.createSampler(createInfo);
     }
     void Render::CreateTexture() {
-        texture.reset(new Texture("./texture.jpg"));
+        texture.reset(new Texture("./role.png"));
+        //texture.reset(new Texture("./texture.jpg"));
     }
 
 
