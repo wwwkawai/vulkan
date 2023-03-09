@@ -14,6 +14,9 @@ namespace myrender{
         Render();
         ~Render();
         void Rendering();
+        void Start();
+        void End();
+        void Rendering(Texture* texture);
 
     private:
         int MAX_FRAME_SIZE;
@@ -32,6 +35,7 @@ namespace myrender{
         std::vector<vk::DescriptorSet> descSets;
         vk::Sampler sampler;
         std::unique_ptr<Texture> texture;
+        unsigned int imageIndex;
         void CreateVertexBuf();
         void CreateUniformBuf();
         void BufVertexData();

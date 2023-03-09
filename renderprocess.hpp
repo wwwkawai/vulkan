@@ -10,7 +10,7 @@ namespace myrender {
     public:
         vk::Pipeline pipeline;
         vk::PipelineLayout layout;
-        vk::DescriptorSetLayout setLayout;
+        std::vector<vk::DescriptorSetLayout> setLayout;
         vk::RenderPass renderPass;
 
         RenderProcess();

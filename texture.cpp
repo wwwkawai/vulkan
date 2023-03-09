@@ -23,10 +23,13 @@ namespace myrender{
         TransformData2Image(*buffer,w,h);
         TransitionImageLayoutFromDst2Optimal();
         CreateImageView();
+        CreateSampler();
+        UpdateDescriptorSets();
         stbi_image_free(pixels);
     }
     Texture::~Texture() {
         auto& device = Context::GetInstance().device;
+        device.destroySampler(sampler);
         device.destroyImageView(imageView);
         device.freeMemory(memory);
         device.destroyImage(image);
@@ -56,6 +59,20 @@ namespace myrender{
         allocateInfo.setMemoryTypeIndex(index);
         memory = device.allocateMemory(allocateInfo);
 
+    }
+    void Texture::CreateSampler() {
+        vk::SamplerCreateInfo createInfo;
+        createInfo.setMagFilter(vk::Filter::eLinear)
+                .setMinFilter(vk::Filter::eLinear)
+                .setAddressModeU(vk::SamplerAddressMode::eRepeat)
+                .setAddressModeV(vk::SamplerAddressMode::eRepeat)
+                .setAddressModeW(vk::SamplerAddressMode::eRepeat)
+                .setAnisotropyEnable(false)
+                .setMipmapMode(vk::SamplerMipmapMode::eLinear)
+                .setBorderColor(vk::BorderColor::eIntOpaqueBlack)
+                .setUnnormalizedCoordinates(false)
+                .setCompareEnable(false);
+        sampler = Context::GetInstance().device.createSampler(createInfo);
     }
     void Texture::CreateImageView() {
         vk::ImageViewCreateInfo createInfo;
@@ -94,6 +111,22 @@ namespace myrender{
 
 
         });
+
+    }
+    void Texture::UpdateDescriptorSets() {
+        descSet = DescriptorManager::Instance().AllocSet(vk::DescriptorType::eCombinedImageSampler);
+        vk::DescriptorImageInfo imageInfo;
+        imageInfo.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+                .setImageView(imageView)
+                .setSampler(sampler);
+        vk::WriteDescriptorSet writer;
+        writer.setImageInfo(imageInfo)
+                .setDstBinding(0)
+                .setDstArrayElement(0)
+                .setDescriptorCount(1)
+                .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+                .setDstSet(descSet.set);
+        Context::GetInstance().device.updateDescriptorSets(writer,{});
 
     }
     void Texture::TransitionImageLayoutFromDst2Optimal() {

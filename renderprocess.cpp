@@ -59,6 +59,12 @@ namespace myrender{
         //Test stencil/depth
 
         //Color blending
+        /*newRGB = srcRGB * srcFactor <op> dstFactor * dstRGB
+         *newAlpha = srcAlpha * srcFactor <op> dstFactor * dstAlpha
+         *
+         *newRGB = srcRGB * 1 + (1-srcAlpha) * dstRGB
+         * newAlpha = srcAlpha * 1 + 0 * dstAlpha
+         */
         vk::PipelineColorBlendStateCreateInfo blend;
         vk::PipelineColorBlendAttachmentState attachs;
         attachs.setBlendEnable(true)
@@ -93,14 +99,17 @@ namespace myrender{
     }
     void RenderProcess::InitSetLayout() {
         vk::DescriptorSetLayoutCreateInfo createInfo;
+        auto& device =Context::GetInstance().device;
         std::vector<vk::DescriptorSetLayoutBinding> bindings(2);
         bindings[0] = Uniform::GetBinding();
-        bindings[1].setBinding(1)
+        createInfo.setBindings(bindings[0]);
+        setLayout.push_back(device.createDescriptorSetLayout(createInfo));
+        bindings[1].setBinding(0)
         .setDescriptorCount(1)
         .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
         .setStageFlags(vk::ShaderStageFlagBits::eFragment);
-        createInfo.setBindings(bindings);
-        setLayout = Context::GetInstance().device.createDescriptorSetLayout(createInfo);
+        createInfo.setBindings(bindings[1]);
+        setLayout.push_back(device.createDescriptorSetLayout(createInfo));
     }
     void RenderProcess::InitLayout() {
         vk::PipelineLayoutCreateInfo createInfo;
@@ -143,7 +152,8 @@ namespace myrender{
     }
     RenderProcess::~RenderProcess() {
         auto& device = Context::GetInstance().device;
-        device.destroyDescriptorSetLayout(setLayout);
+        for(int i=0;i<setLayout.size();i++)
+            device.destroyDescriptorSetLayout(setLayout[i]);
         device.destroyRenderPass(renderPass);
         device.destroyPipelineLayout(layout);
         device.destroyPipeline(pipeline);

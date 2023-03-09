@@ -32,7 +32,9 @@ int main(int , char**) {
     }, 1024, 720);
     auto& render = myrender::GetRender();
     while (!windowClose) {
+        render.Start();
         render.Rendering();
+        render.End();
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 windowClose = true;
