@@ -114,7 +114,7 @@ namespace myrender{
 
     }
     void Texture::UpdateDescriptorSets() {
-        descSet = DescriptorManager::Instance().AllocSet(vk::DescriptorType::eCombinedImageSampler);
+        descSet = DescriptorManager::Instance().AllocSet(vk::DescriptorType::eCombinedImageSampler,Context::GetInstance().renderProcess->setLayout[1]);
         vk::DescriptorImageInfo imageInfo;
         imageInfo.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
                 .setImageView(imageView)

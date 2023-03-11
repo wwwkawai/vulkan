@@ -5,19 +5,19 @@
 #include "render.hpp"
 #include "context.hpp"
 #include <limits>
-#include "vertex.hpp"
+#include "object.hpp"
 #include "uniform.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 namespace myrender {
 
     std::array<Vertex,7> vertices = {
-            Vertex(-0.5,0.0,1.0,1.0,1.0,0.0,0.0),
-            Vertex(0.0,0.0,1.0,1.0,1.0,0.0,1.0),
-            Vertex(0.0,0.5,1.0,1.0,1.0,1.0,1.0),
-            Vertex(-0.5,0.5,1.0,1.0,1.0,1.0,0.0),
-            Vertex(0.5,-0.5,1.0,1.0,1.0,1.0,0.0),
-            Vertex(0.5,0.0,1.0,1.0,1.0,0.0,0.0),
-            Vertex(0,-0.5,1.0,1.0,1.0,1.0,1.0)
+            Vertex(glm::vec3(-0.5,0.0,0.0),glm::vec3(1.0,1.0,1.0),glm::vec2(0.0,0.0)),
+            Vertex(glm::vec3(0.0,0.0,0.0),glm::vec3(1.0,1.0,1.0),glm::vec2(0.0,1.0)),
+            Vertex(glm::vec3(0.0,0.5,0.0),glm::vec3(1.0,1.0,1.0),glm::vec2(1.0,1.0)),
+            Vertex(glm::vec3(-0.5,0.5,0.0),glm::vec3(1.0,1.0,1.0),glm::vec2(1.0,0.0)),
+            Vertex(glm::vec3(0.5,-0.5,0.0),glm::vec3(1.0,1.0,1.0),glm::vec2(1.0,0.0)),
+            Vertex(glm::vec3(0.5,0.0,0.0),glm::vec3(1.0,1.0,1.0),glm::vec2(0.0,0.0)),
+            Vertex(glm::vec3(0,-0.5,0.0),glm::vec3(1.0,1.0,1.0),glm::vec2(1.0,1.0))
 
     };
     const std::vector<uint16_t> indices = {0,1,2,2,3,0,6,4,5,5,1,6};
@@ -162,12 +162,17 @@ namespace myrender {
         descPool = Context::GetInstance().device.createDescriptorPool(createInfo);
     }
     void Render::CreateSets() {
+        /*
         std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAME_SIZE, Context::GetInstance().renderProcess->setLayout[0]);
         vk::DescriptorSetAllocateInfo allocateInfo;
         allocateInfo.setSetLayouts(layouts)
         .setDescriptorPool(descPool)
         .setDescriptorSetCount(MAX_FRAME_SIZE);
         descSets = Context::GetInstance().device.allocateDescriptorSets(allocateInfo);
+        */
+        for(int i=0;i<MAX_FRAME_SIZE;i++) {
+            descSets.push_back(DescriptorManager::Instance().AllocSet(vk::DescriptorType::eUniformBuffer, Context::GetInstance().renderProcess->setLayout[0]).set);
+        }
     }
     void Render::UpdateDescriptorSets() {
         for(int i=0;i<descSets.size();i++){

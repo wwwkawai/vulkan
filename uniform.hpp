@@ -6,7 +6,6 @@
 #define VULKAN_UNIFORM_HPP
 
 #include "vulkan/vulkan.hpp"
-#include "vertex.hpp"
 #include "glm/glm.hpp"
 namespace myrender {
     struct Uniform final {

@@ -5,7 +5,7 @@
 #include "renderprocess.hpp"
 #include "shader.hpp"
 #include "context.hpp"
-#include "vertex.hpp"
+#include "object.hpp"
 #include "uniform.hpp"
 namespace myrender{
     RenderProcess::RenderProcess() {

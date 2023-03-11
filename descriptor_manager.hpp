@@ -22,7 +22,7 @@ namespace myrender{
             vk::DescriptorPool pool;
             vk::DescriptorSet set;
         };
-        setInfo AllocSet(vk::DescriptorType type);
+        setInfo AllocSet(vk::DescriptorType type, vk::DescriptorSetLayout& layout);
         static void Init(int MAX_FRAME_SIZE);
         static void Quit();
 

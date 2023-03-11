@@ -10,6 +10,13 @@ namespace myrender{
         this->pos = pos;
         this->textureCoord = textureCoord;
     }
+    vk::VertexInputBindingDescription Vertex::GetBindDesc() {
+        vk::VertexInputBindingDescription bind;
+        bind.setBinding(0)
+                .setInputRate(vk::VertexInputRate::eVertex)
+                .setStride(sizeof(Vertex));
+        return bind;
+    }
     std::vector<vk::VertexInputAttributeDescription> Vertex::GetAttriDesc() {
         std::vector<vk::VertexInputAttributeDescription> attr(3);
         attr[0].setBinding(0)

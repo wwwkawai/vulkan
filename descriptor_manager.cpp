@@ -26,10 +26,10 @@ namespace myrender{
     DescriptorManager::DescriptorManager(int MAX_FRAME_SIZE):MAX_FRAME_SIZE(MAX_FRAME_SIZE) {
         CreateDescriptorPool(vk::DescriptorType::eUniformBuffer);
     }
-    DescriptorManager::setInfo DescriptorManager::AllocSet(vk::DescriptorType type) {
+    DescriptorManager::setInfo DescriptorManager::AllocSet(vk::DescriptorType type, vk::DescriptorSetLayout& layout) {
         for(auto& pool:descPools){
             if(type == pool.type && pool.remain_sets>0){
-                std::vector<vk::DescriptorSetLayout> layouts{Context::GetInstance().renderProcess->setLayout[1]};
+                std::vector<vk::DescriptorSetLayout> layouts{layout};
                 vk::DescriptorSetAllocateInfo allocateInfo;
                 allocateInfo.setSetLayouts(layouts)
                         .setDescriptorPool(pool.pool)
@@ -41,7 +41,7 @@ namespace myrender{
         }
         CreateDescriptorPool(type);
         auto& pool = descPools.back();
-        std::vector<vk::DescriptorSetLayout> layouts{Context::GetInstance().renderProcess->setLayout[1]};
+        std::vector<vk::DescriptorSetLayout> layouts{layout};
         vk::DescriptorSetAllocateInfo allocateInfo;
         allocateInfo.setSetLayouts(layouts)
                 .setDescriptorPool(pool.pool)
