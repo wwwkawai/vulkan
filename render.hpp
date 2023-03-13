@@ -8,6 +8,7 @@
 #include "memory"
 #include "buffer.hpp"
 #include "texture.hpp"
+#include "scene.hpp"
 namespace myrender{
     class Render final{
     public:
@@ -17,6 +18,10 @@ namespace myrender{
         void Start();
         void End();
         void Rendering(Texture* texture);
+        void Rendering(Object* obj);
+        std::unique_ptr<Scene> scene;
+        void AddObj(Object* obj);
+        void DeleteObj(Object* obj);
 
     private:
         int MAX_FRAME_SIZE;
@@ -25,10 +30,6 @@ namespace myrender{
         std::vector<vk::Semaphore> imageAvailable;
         std::vector<vk::Semaphore> imageDrawFinish;
         std::vector<vk::Fence> cmdAvailable;
-        std::unique_ptr<Buffer> hostVertexBuf;
-        std::unique_ptr<Buffer> deviceVertexBuf;
-        std::unique_ptr<Buffer> hostIndicesBuf;
-        std::unique_ptr<Buffer> deviceIndicesBuf;
         std::vector<std::unique_ptr<Buffer>> hostUniformBuf;
         std::vector<std::unique_ptr<Buffer>> deviceUniformBuf;
         vk::DescriptorPool descPool;
@@ -36,9 +37,8 @@ namespace myrender{
         vk::Sampler sampler;
         std::unique_ptr<Texture> texture;
         unsigned int imageIndex;
-        void CreateVertexBuf();
+
         void CreateUniformBuf();
-        void BufVertexData();
         void BufUniformData();
         void AllocCmdBuf();
         void CreateSets();
@@ -46,8 +46,6 @@ namespace myrender{
         void CreateSemaphores();
         void CreateDescriptorPool();
         void UpdateDescriptorSets();
-        void CreateIndicesBuf();
-        void BufIndicesData();
         void InitMVP();
         void CreateSampler();
         void CreateTexture();

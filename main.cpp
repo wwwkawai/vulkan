@@ -31,6 +31,22 @@ int main(int , char**) {
         return surface;
     }, 1024, 720);
     auto& render = myrender::GetRender();
+    std::vector<myrender::Vertex> vertices1 = {
+            myrender::Vertex(glm::vec3(-0.5,0.0,0.0),glm::vec3(1.0,1.0,1.0),glm::vec2(0.0,0.0)),
+            myrender::Vertex(glm::vec3(0.0,0.0,0.0),glm::vec3(1.0,1.0,1.0),glm::vec2(0.0,1.0)),
+            myrender::Vertex(glm::vec3(0.0,0.5,0.0),glm::vec3(1.0,1.0,1.0),glm::vec2(1.0,1.0)),
+            myrender::Vertex(glm::vec3(-0.5,0.5,0.0),glm::vec3(1.0,1.0,1.0),glm::vec2(1.0,0.0))
+    };
+    std::vector<myrender::Vertex> vertices2 = {
+            myrender::Vertex(glm::vec3(0,-0.5,0.0),glm::vec3(1.0,1.0,1.0),glm::vec2(1.0,1.0)),
+            myrender::Vertex(glm::vec3(0.5,-0.5,0.0),glm::vec3(1.0,1.0,1.0),glm::vec2(1.0,0.0)),
+            myrender::Vertex(glm::vec3(0.5,0.0,0.0),glm::vec3(1.0,1.0,1.0),glm::vec2(0.0,0.0)),
+            myrender::Vertex(glm::vec3(0.0,0.0,0.0),glm::vec3(1.0,1.0,1.0),glm::vec2(0.0,1.0))
+    };
+    myrender::Object* obj1 = new myrender::Object(vertices1,std::vector<uint16_t>{0,1,2,2,3,0},"./role.png");
+    myrender::Object* obj2 = new myrender::Object(vertices2, std::vector<uint16_t>{0,1,2,2,3,0},"./texture.jpg");
+    render.AddObj(obj1);
+    render.AddObj(obj2);
     while (!windowClose) {
         render.Start();
         render.Rendering();
