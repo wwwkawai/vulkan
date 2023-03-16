@@ -18,14 +18,21 @@ namespace myrender{
             vk::SurfaceTransformFlagBitsKHR transform;
             vk::PresentModeKHR presentMode;
         };
+        vk::Image depthImage;
+        vk::ImageView depthImageView;
+        vk::DeviceMemory depthImageMemory;
         std::vector<vk::Image> images;
         std::vector<vk::ImageView> imageViews;
         SwapchainInfo info;
         std::vector<vk::Framebuffer> framebuffers;
         void QueryInfo(int w, int h);
         void GetImage();
+        void CreateDepthBuffer();
+        void CreateDepthImage();
+        void CreateDepthImageView();
+        void AllocDepthImageMemory();
         void CreateImageViews();
-        void CreateFramebuffers(int w, int h);
+        void CreateFramebuffers();
     };
 
 

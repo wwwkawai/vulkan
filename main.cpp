@@ -38,10 +38,10 @@ int main(int , char**) {
             myrender::Vertex(glm::vec3(-0.5,0.5,0.0),glm::vec3(1.0,1.0,1.0),glm::vec2(1.0,0.0))
     };
     std::vector<myrender::Vertex> vertices2 = {
-            myrender::Vertex(glm::vec3(0,-0.5,0.0),glm::vec3(1.0,1.0,1.0),glm::vec2(1.0,1.0)),
-            myrender::Vertex(glm::vec3(0.5,-0.5,0.0),glm::vec3(1.0,1.0,1.0),glm::vec2(1.0,0.0)),
-            myrender::Vertex(glm::vec3(0.5,0.0,0.0),glm::vec3(1.0,1.0,1.0),glm::vec2(0.0,0.0)),
-            myrender::Vertex(glm::vec3(0.0,0.0,0.0),glm::vec3(1.0,1.0,1.0),glm::vec2(0.0,1.0))
+            myrender::Vertex(glm::vec3(-0.2,-0.3,-0.3),glm::vec3(1.0,1.0,1.0),glm::vec2(1.0,1.0)),
+            myrender::Vertex(glm::vec3(0.3,-0.3,-0.3),glm::vec3(1.0,1.0,1.0),glm::vec2(1.0,0.0)),
+            myrender::Vertex(glm::vec3(0.3,0.2,-0.3),glm::vec3(1.0,1.0,1.0),glm::vec2(0.0,0.0)),
+            myrender::Vertex(glm::vec3(-0.2,0.2,-0.3),glm::vec3(1.0,1.0,1.0),glm::vec2(0.0,1.0))
     };
     myrender::Object* obj1 = new myrender::Object(vertices1,std::vector<uint16_t>{0,1,2,2,3,0},"./role.png");
     myrender::Object* obj2 = new myrender::Object(vertices2, std::vector<uint16_t>{0,1,2,2,3,0},"./texture.jpg");

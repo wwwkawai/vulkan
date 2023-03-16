@@ -1,7 +1,7 @@
 //
 // Created by 87549 on 2023/2/21.
 //
-
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include "render.hpp"
 #include "context.hpp"
 #include <limits>
@@ -244,14 +244,15 @@ namespace myrender {
         cmdBuf.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
         vk::RenderPassBeginInfo renderPassBeginInfo;
         vk::Rect2D area;
-        vk::ClearValue clearValue;
+        std::array<vk::ClearValue,2> clearValues;
         area.setOffset({0, 0})
                 .setExtent(swapchain->info.imageExtent);
-        clearValue.color = vk::ClearColorValue(std::array<float, 4>{0.1f, 0.1f, 0.1f, 0.1f});
+        clearValues[0].color = vk::ClearColorValue(std::array<float, 4>{0.1f, 0.1f, 0.1f, 0.1f});
+        clearValues[1].depthStencil = vk::ClearDepthStencilValue(1.,0);
         renderPassBeginInfo.setRenderPass(renderProcess->renderPass)
                 .setRenderArea(area)
                 .setFramebuffer(swapchain->framebuffers[imageIndex])
-                .setClearValues(clearValue);
+                .setClearValues(clearValues);
         cmdBuf.beginRenderPass(renderPassBeginInfo, {});
     }
     void Render::Rendering(myrender::Object *obj) {

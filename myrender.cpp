@@ -9,7 +9,9 @@ namespace myrender {
         Context::GetInstance().InitSwapchain(w,h);
         Shader::Init(ReadWholeFile("./vert.spv"), ReadWholeFile("./frag.spv"));
         Context::GetInstance().renderProcess.reset(new RenderProcess);
-        Context::GetInstance().swapchain->CreateFramebuffers(w,h);
+        Context::GetInstance().swapchain->CreateFramebuffers();
+        w = Context::GetInstance().swapchain->info.imageExtent.width;
+        h = Context::GetInstance().swapchain->info.imageExtent.height;
         Context::GetInstance().renderProcess->InitpPipeline(w,h);
         Context::GetInstance().InitCommandManager();
         Context::GetInstance().InitRender();
