@@ -79,7 +79,7 @@ namespace myrender {
          */
     }
     void Render::InitMVP() {
-        ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(30.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         int width = Context::GetInstance().swapchain->info.imageExtent.width;
         int height = Context::GetInstance().swapchain->info.imageExtent.height;
@@ -263,7 +263,7 @@ namespace myrender {
 
         vk::DeviceSize offset = 0;
         cmdBuf.bindVertexBuffers(0, obj->deviceVertexBuf->buffer, offset);
-        cmdBuf.bindIndexBuffer(obj->deviceIndicesBuf->buffer, offset, vk::IndexType::eUint16);
+        cmdBuf.bindIndexBuffer(obj->deviceIndicesBuf->buffer, offset, vk::IndexType::eUint32);
         /*
         cmdBuf.beginRenderPass(renderPassBeginInfo, {});
         {

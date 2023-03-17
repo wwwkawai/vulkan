@@ -10,6 +10,7 @@ namespace myrender{
         this->pos = pos;
         this->textureCoord = textureCoord;
     }
+    Vertex::Vertex() {}
     vk::VertexInputBindingDescription Vertex::GetBindDesc() {
         vk::VertexInputBindingDescription bind;
         bind.setBinding(0)
@@ -33,18 +34,18 @@ namespace myrender{
                 .setOffset(offsetof(Vertex,textureCoord));
         return attr;
     }
-    Object::Object(std::vector<Vertex> vertices, std::vector<uint16_t> indices) {
+    Object::Object(std::vector<Vertex> vertices, std::vector<uint32_t> indices) {
         this->vertices = vertices;
         this->indices = indices;
         texture = nullptr;
     }
     void Object::CreateIndicesBuf() {
-        hostIndicesBuf.reset(new Buffer(sizeof(indices),vk::BufferUsageFlagBits::eTransferSrc,vk::MemoryPropertyFlagBits::eHostVisible|vk::MemoryPropertyFlagBits::eHostCoherent));
-        deviceIndicesBuf.reset(new Buffer(sizeof(indices),vk::BufferUsageFlagBits::eTransferDst|vk::BufferUsageFlagBits::eIndexBuffer,vk::MemoryPropertyFlagBits::eDeviceLocal));
+        hostIndicesBuf.reset(new Buffer(sizeof(uint32_t)*indices.size(),vk::BufferUsageFlagBits::eTransferSrc,vk::MemoryPropertyFlagBits::eHostVisible|vk::MemoryPropertyFlagBits::eHostCoherent));
+        deviceIndicesBuf.reset(new Buffer(sizeof(uint32_t)*indices.size(),vk::BufferUsageFlagBits::eTransferDst|vk::BufferUsageFlagBits::eIndexBuffer,vk::MemoryPropertyFlagBits::eDeviceLocal));
 
     }
     void Object::BufIndicesData() {
-        memcpy(hostIndicesBuf->ptr,indices.data(),sizeof(indices));
+        memcpy(hostIndicesBuf->ptr,indices.data(),sizeof(uint32_t)*indices.size());
         CopyFromBuf(hostIndicesBuf->buffer, deviceIndicesBuf->buffer, hostIndicesBuf->size,0,0);
     }
     void Object::CreateVerticesBuf() {
@@ -73,7 +74,7 @@ namespace myrender{
         Context::GetInstance().device.waitIdle();
         Context::GetInstance().commandManager->FreeCmd(cmdBuf);
     }
-    Object::Object(std::vector<Vertex> vertices, std::vector<uint16_t> indices, std::string_view filename) {
+    Object::Object(std::vector<Vertex> vertices, std::vector<uint32_t> indices, std::string_view filename) {
         this->vertices = vertices;
         this->indices = indices;
         CreateVerticesBuf();
